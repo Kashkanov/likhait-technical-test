@@ -142,8 +142,8 @@ export function CalendarExpenseTable({
                     gap: "0.5rem",
                   }}
                 >
-                  <span>{getCategoryEmoji(expense.category)}</span>
-                  <span>{expense.category}</span>
+                  <span>{getCategoryEmoji(expense.category.name)}</span>
+                  <span>{expense.category.name}</span>
                 </span>
               </td>
               <td style={{ ...tdStyle, textAlign: "left", fontWeight: 600 }}>
@@ -191,7 +191,7 @@ export function CalendarExpenseTable({
             initialData={{
               amount: editingExpense.amount.toString(),
               description: editingExpense.description,
-              category: editingExpense.category,
+              category_id: editingExpense.category.id,
               payer_name: editingExpense.payer_name,    // extract payer name from expense
               date: formatDate(new Date(editingExpense.date)),
             }}

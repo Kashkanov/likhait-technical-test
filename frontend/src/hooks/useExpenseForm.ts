@@ -11,16 +11,21 @@ interface UseExpenseFormProps {
   onSubmit: (data: ExpenseFormData) => Promise<void>;
 }
 
+// Type for expense form errors
+type ExpenseErrorMsgs = Partial<Omit<ExpenseFormData, 'category_id'>> & {
+  category_id?: string
+};
+
 export function useExpenseForm({ initialData, onSubmit }: UseExpenseFormProps) {
   const [formData, setFormData] = useState<ExpenseFormData>({
     amount: initialData?.amount || "",
     description: initialData?.description || "",
-    category: initialData?.category || "",
+    category_id: initialData?.category_id || 0,
     payer_name: initialData?.payer_name || "John Doe",
     date: initialData?.date || formatDate(new Date()),
   });
 
-  const [errors, setErrors] = useState<Partial<ExpenseFormData>>({});
+  const [errors, setErrors] = useState<ExpenseErrorMsgs>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (field: keyof ExpenseFormData, value: string) => {
@@ -31,8 +36,19 @@ export function useExpenseForm({ initialData, onSubmit }: UseExpenseFormProps) {
     }
   };
 
+  const handleChangeNumber = (field: keyof ExpenseFormData, value: string) => {
+    const converted = parseInt(value)
+    setFormData((prev) => ({ ...prev, [field]: converted }));
+    // Clear error for this field when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  }
+
   const validateForm = (): boolean => {
-    const newErrors: Partial<ExpenseFormData> = {};
+    const newErrors: ExpenseErrorMsgs = {};
+
+    console.log(formData);
 
     if (!formData.amount || Number(formData.amount) <= 0) {
       newErrors.amount = "Amount must be greater than 0";
@@ -42,8 +58,8 @@ export function useExpenseForm({ initialData, onSubmit }: UseExpenseFormProps) {
       newErrors.description = "Description is required";
     }
 
-    if (!formData.category) {
-      newErrors.category = "Category is required";
+    if (formData.category_id < 0) {
+      newErrors.category_id = "Category is required";
     }
 
     if (!formData.date) {
@@ -68,8 +84,9 @@ export function useExpenseForm({ initialData, onSubmit }: UseExpenseFormProps) {
       setFormData({
         amount: "",
         description: "",
-        category: "",
+        category_id: 0,
         date: formatDate(new Date()),
+        payer_name: "John Doe",
       });
       setErrors({});
     } catch (error) {
@@ -83,7 +100,8 @@ export function useExpenseForm({ initialData, onSubmit }: UseExpenseFormProps) {
     setFormData({
       amount: initialData?.amount || "",
       description: initialData?.description || "",
-      category: initialData?.category || "",
+      category_id: initialData?.category_id || 0,
+      payer_name: initialData?.payer_name || "John Doe",
       date: initialData?.date || formatDate(new Date()),
     });
     setErrors({});
@@ -94,6 +112,7 @@ export function useExpenseForm({ initialData, onSubmit }: UseExpenseFormProps) {
     errors,
     isSubmitting,
     handleChange,
+    handleChangeNumber,
     handleSubmit,
     resetForm,
   };

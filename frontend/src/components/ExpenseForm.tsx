@@ -21,7 +21,7 @@ export function ExpenseForm({
                                 onCancel,
                                 submitLabel = "Add Expense",
                             }: ExpenseFormProps) {
-    const {formData, errors, isSubmitting, handleChange, handleSubmit} =
+    const {formData, errors, isSubmitting, handleChange, handleChangeNumber, handleSubmit} =
         useExpenseForm({
             initialData,
             onSubmit,
@@ -57,8 +57,11 @@ export function ExpenseForm({
         } catch (error) {
             console.error("Error fetching expenses:", error);
         }
-
     }
+
+    useEffect(() => {
+        console.log(categories);
+    }, [categories]);
 
     const categoryOptions = categories.map((category) => ({
         value: category.id,
@@ -93,9 +96,9 @@ export function ExpenseForm({
             <SelectBox
                 label="Category"
                 options={categoryOptions}
-                value={formData.category}
-                onChange={(e) => handleChange("category", e.target.value)}
-                error={errors.category}
+                value={formData.category_id}
+                onChange={(e) => handleChangeNumber("category_id", e.target.value)}
+                error={errors.category_id}
                 fullWidth
                 required
             />
