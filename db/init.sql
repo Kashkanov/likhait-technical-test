@@ -52,3 +52,8 @@ INSERT INTO expenses (description, amount, category_id, payer_name) VALUES
   ('Breakfast Meeting with Client', 580.00, 1, 'Jane Smith'),
   ('Bus Tickets for Conference', 150.00, 2, 'Sarah Lee'),
   ('Electricity Bill', 3200.00, 5, 'Emily Chen');
+
+-- Test database added for rspec
+CREATE DATABASE IF NOT EXISTS expense_system_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+GRANT ALL PRIVILEGES ON expense_system_test.* TO 'expense_user'@'%';
+FLUSH PRIVILEGES;

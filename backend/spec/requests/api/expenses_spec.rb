@@ -5,8 +5,8 @@ RSpec.describe "Api::Expenses", type: :request do
   let!(:transport_category) { Category.create!(name: "Transport") }
 
   describe "GET /api/expenses" do
-  let!(:expense1) { Expense.create!(description: "Lunch", amount: 100.00, category: food_category, date: Date.today) }
-  let!(:expense2) { Expense.create!(description: "Taxi", amount: 50.00, category: transport_category, date: Date.today) }
+  let!(:expense1) { Expense.create!(description: "Lunch", amount: 100.00, category: food_category, date: Date.today, payer_name: "John Doe", created_at: 1.minute.ago) }  # add payer_name
+  let!(:expense2) { Expense.create!(description: "Taxi", amount: 50.00, category: transport_category, date: Date.today - 1.day, payer_name: "John Doe", created_at: Time.current) }   # earlier date
 
     it "returns all expenses with category information" do
       get "/api/expenses"
@@ -16,12 +16,12 @@ RSpec.describe "Api::Expenses", type: :request do
       expect(json.length).to eq(2)
     end
 
-    it "returns expenses in descending order by created_at" do
+    it "returns expenses in descending order by date" do
       get "/api/expenses"
 
       json = JSON.parse(response.body)
-      expect(json.first["id"]).to eq(expense2.id)
-      expect(json.last["id"]).to eq(expense1.id)
+      expect(json.first["id"]).to eq(expense1.id)
+      expect(json.last["id"]).to eq(expense2.id)
     end
   end
 
@@ -33,6 +33,7 @@ RSpec.describe "Api::Expenses", type: :request do
             description: "Team Lunch",
             amount: 150.50,
             category_id: food_category.id,
+            payer_name: "John Doe",
             date: Date.today
           }
         }
@@ -46,7 +47,7 @@ RSpec.describe "Api::Expenses", type: :request do
         expect(response).to have_http_status(:created)
         json = JSON.parse(response.body)
         expect(json["description"]).to eq("Team Lunch")
-        expect(json["amount"]).to eq("150.5")
+        expect(json["amount"]).to eq(150.5)     # changed string to float
       end
     end
 
@@ -57,6 +58,7 @@ RSpec.describe "Api::Expenses", type: :request do
             description: "Invalid expense",
             amount: -100.00,
             category_id: food_category.id,
+            payer_name: "John Doe",
             date: Date.today
           }
         }
@@ -74,6 +76,7 @@ RSpec.describe "Api::Expenses", type: :request do
             description: "",
             amount: 100.00,
             category_id: food_category.id,
+            payer_name: "John Doe",
             date: Date.today
           }
         }
@@ -83,6 +86,26 @@ RSpec.describe "Api::Expenses", type: :request do
         }.to change(Expense, :count).by(1)
 
         expect(response).to have_http_status(:created)
+      end
+      it "with a future date" do
+        invalid_params = {
+          expense: {
+            description: "Invalid expense",
+            amount: 100.00,
+            category_id: food_category.id,
+            payer_name: "John Doe",
+            date: Date.today + 1.day
+          }
+        }
+
+        expect {
+          post "/api/expenses", params: invalid_params, as: :json
+        }.to change(Expense, :count).by(0)
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        json = JSON.parse(response.body)
+        today = Date.today
+        expect(json["errors"]).to include("Date must be less than or equal to #{today}")
       end
     end
   end

@@ -6,18 +6,32 @@ export interface Expense {
   id: number;
   amount: number;
   description: string;
-  category: string;
+  category: Category;   // included entire category object for editing
+  payer_name: string;
   date: string;
   created_at: string;
   updated_at: string;
 }
 
+
 export interface ExpenseFormData {
   amount: string;
   description: string;
-  category: string;
+  category_id: number;   // changed to category id for API compatibility
+  payer_name: string;
   date: string;
 }
+
+export interface Category {
+  id: number;
+  name: string;
+}
+
+export interface CategoryFormData {
+  name: string;
+}
+
+export type CategoryResponse = | Category | { errors: string[] };
 
 export interface MonthlySummary {
   totalExpenses: number;
