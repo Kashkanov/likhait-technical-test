@@ -1,6 +1,7 @@
 class Api::ExpensesController < ApplicationController
   def index
-    expenses = Expense.includes(:category).order(created_at: :desc)
+    # BUG-001: Order expenses by date in descending order; by created_at for expenses with the same date
+    expenses = Expense.includes(:category).order(date: :desc, created_at: :desc)
 
     if params[:year].present? && params[:month].present?
       year = params[:year].to_i
@@ -12,7 +13,7 @@ class Api::ExpensesController < ApplicationController
       expenses = expenses.where(created_at: start_date.beginning_of_day..end_date.end_of_day)
     end
 
-    render json: expenses.map { |expense| format_expense(expense) }
+    render json: expenses.map { |expense| format_expense_with_category(expense) }
   end
 
   def create
@@ -44,7 +45,7 @@ class Api::ExpensesController < ApplicationController
   private
 
   def expense_params
-    params.require(:expense).permit(:description, :amount, :category_id, :date)
+    params.require(:expense).permit(:description, :amount, :category_id, :payer_name, :date)
   end
 
   def format_expense(expense)
@@ -52,10 +53,27 @@ class Api::ExpensesController < ApplicationController
       id: expense.id,
       description: expense.description,
       amount: expense.amount.to_f,
-      category: expense.category.name,
+      category: expense.category_id,
+      payer_name: expense.payer_name,       # extract payer name from expense
       date: expense.date.to_s,
       created_at: expense.created_at,
       updated_at: expense.updated_at
     }
   end
+
+  def format_expense_with_category(expense)
+      {
+        id: expense.id,
+        description: expense.description,
+        amount: expense.amount.to_f,
+        category: {
+          id: expense.category.id,
+          name: expense.category.name
+        },
+        payer_name: expense.payer_name,       # extract payer name from expense
+        date: expense.date.to_s,
+        created_at: expense.created_at,
+        updated_at: expense.updated_at
+      }
+    end
 end
