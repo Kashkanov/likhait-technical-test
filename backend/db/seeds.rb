@@ -146,6 +146,7 @@ while current_date <= end_date
         amount: amount,
         category: category,
         date: current_date,
+        payer_name: 'User',     # default payer name so seed doesn't break
         created_at: current_date,
         updated_at: current_date
       )

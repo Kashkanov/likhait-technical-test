@@ -16,6 +16,7 @@ export function useExpenseForm({ initialData, onSubmit }: UseExpenseFormProps) {
     amount: initialData?.amount || "",
     description: initialData?.description || "",
     category: initialData?.category || "",
+    payer_name: initialData?.payer_name || "John Doe",
     date: initialData?.date || formatDate(new Date()),
   });
 
